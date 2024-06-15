@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PDF Reader</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.mjs" type="module"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="nav_bar">
+        <div class = "icons">
+            <i class="fa-solid fa-bars" style = "color: #ffffff;" id = "menu"></i>
+            <i class="fa-solid fa-pencil" style = "color: #ffffff;" id = "pencil"></i>
+            <i class="fa-solid fa-highlighter" style = "color: #ffffff;" id = "highlighter"></i>
+            <i class="fa-solid fa-eraser" style = "color: #ffffff;" id = "eraser"></i>
+            <i class="fa-brands fa-space-awesome" style = "color: #ffffff;" id = "copilot"></i>
+        </div>
+        <div class = "zoom">
+            <i class="fa-solid fa-minus" style = "color: #ffffff;" id = "minus"></i>
+            <i class="fa-solid fa-plus" style = "color: #ffffff;" id = "plus"></i>
+            <span class = "Page_info">
+                <label class = "Page_label">Page</label> 
+                <input type = "number" id = "page_num_input" min = 1 max = 999> 
+                <label class = "Page_label">of</label>  
+                <span id = "page_count"></span>
+            </span>
+        </div>
+        <div class = "icons">
+            <i class="fa-regular fa-comment" style = "color: #ffffff;" id = "comment"></i>
+            <i class="fa-solid fa-magnifying-glass" style = "color: #ffffff;" id = "search"></i>
+            <i class="fa-regular fa-floppy-disk" style = "color: #ffffff;" id = "save"></i>
+            <i class="fa-solid fa-floppy-disk" style = "color: #ffffff;" id = "save_as"></i>
+        </div>
+    </div>
+
+    <div class = "pdf_viewer">
+        <canvas id="pdf-render"></canvas>
+        <div style="height: 2000px;">Extra content to enable scrolling</div>
+    </div>
+    
+    <script src="https://kit.fontawesome.com/de5df2ccd4.js" crossorigin="anonymous"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
