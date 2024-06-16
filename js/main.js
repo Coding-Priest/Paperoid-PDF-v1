@@ -55,36 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        //* Appending pages
-        const appendPage = num => {
-            pageIsRendering = true;
-            
-            //Get Page
-            pdfDoc.getPage(num).then(page => {
-                //Set scale
-                const viewport = page.getViewport({scale});
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-        
-                const renderCtx = {
-                    canvasContext: ctx,
-                    viewport
-                }
-        
-                page.render(renderCtx).promise.then(() => {
-                    pageIsRendering = false;
-                    if(pageNumIsPending != null){
-                        renderPage(pageNumIsPending);
-                        pageNumIsPending = null;
-                    }
-        
-                });
-        
-                //Output current page
-                document.querySelector('#page-num').textContent = num;
-            })
-        }
-
         //* Check for pages rendering
         const queueRenderPage = num => {
             console.log("Inside queueRenderPage")

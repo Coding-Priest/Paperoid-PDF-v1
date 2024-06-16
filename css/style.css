@@ -1,6 +1,12 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    /* overflow: hidden; */
+}
+
 .nav_bar {
     background-color: black;
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     width: 100%;
@@ -81,5 +87,10 @@ i:hover {
     flex-direction: column;
     align-items: center;
     overflow-y: scroll;
-    height: 100vh;
+    height: calc(100vh - 62.4px);
+    background-color: rgba(51,51,51,255);
+}
+
+.canvas_experiment{
+    margin-bottom: 50px;
 }
