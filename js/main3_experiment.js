@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.mjs")
     .then((pdfjsLib) => {
-      //* Variables
+      //* Declaring Variables
       const url = "../Docs/deeplearningbook.pdf";
 
       let pdfDoc = null,
@@ -14,94 +14,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
       //* Rendering the Canvas ID
       const renderCanvasID = (canvas_id, num) => {
-        
-        console.log("Inside renderFirstPage function");
+        console.log("Inside renderCanvasID function");
         const test_canvas = document.getElementById(canvas_id);
         console.log(test_canvas);
         const ctx = test_canvas.getContext("2d");
-        console.log(ctx);
+        console.log(num);
         pageIsRendering = true;
 
-        //Get Page
-        pdfDoc
-          .getPage(num)
-          .then((page) => {
-            console.log("Page gotten");
-            //Set scale
-            const viewport = page.getViewport({ scale });
-            test_canvas.height = viewport.height;
-            test_canvas.width = viewport.width;
-            console.log("Context: ", ctx);
+        // Get Page
+        pdfDoc.getPage(num).then((page) => {
+          console.log("Page gotten");
+          // Set scale
+          const viewport = page.getViewport({ scale });
+          test_canvas.height = viewport.height;
+          test_canvas.width = viewport.width;
+          console.log("Context: ", ctx);
 
-            const renderCtx = {
-              canvasContext: ctx,
-              viewport,
-            };
+          const renderCtx = {
+            canvasContext: ctx,
+            viewport,
+          };
 
-            page.render(renderCtx).promise.then(() => {
-              console.log("Rendering page");
-              pageIsRendering = false;
-              if (pageNumIsPending != null) {
-                renderPage(pageNumIsPending);
-                pageNumIsPending = null;
-              }
-            });
-
-            //Output current page
-            document.querySelector("#page_num_input").textContent = num;
-          })
-          .catch((err) => {
-            console.error("Error rendering page:", err);
+          page.render(renderCtx).promise.then(() => {
+            console.log("Rendering context");
+            pageIsRendering = false;
+            if (pageNumIsPending != null) {
+              renderPage(pageNumIsPending);
+              pageNumIsPending = null;
+            }
           });
-      };
 
-      //* Render multiple pages
-      const renderPage = (canvas, num) => {
-        console.log("Inside renderPage function");
-        console.log(canvas);
-        const ctx = canvas.getContext("2d");
-        pageIsRendering = true;
-
-        //Get Page
-        pdfDoc
-          .getPage(num)
-          .then((page) => {
-            console.log("Page gotten");
-            //Set scale
-            const viewport = page.getViewport({ scale });
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            console.log("Context: ", ctx);
-
-            const renderCtx = {
-              canvasContext: ctx,
-              viewport,
-            };
-
-            const container = document.querySelector(".pdf_viewer");
-            container.appendChild(canvas);
-
-            page.render(renderCtx).promise.then(() => {
-              console.log("Rendering page");
-              pageIsRendering = false;
-              if (pageNumIsPending != null) {
-                renderPage(pageNumIsPending);
-                pageNumIsPending = null;
-              }
-            });
-
-            //Output current page
-            document.querySelector("#page_num_input").textContent = num;
-          })
-          .catch((err) => {
-            console.error("Error rendering page:", err);
-          });
+          // Output current page
+          document.querySelector("#page_num_input").textContent = num;
+        }).catch((err) => {
+          console.error("Error rendering page:", err);
+        });
       };
 
       //* Rendering initial pages
-      const renderInitialPages = (num) => {
+      const renderInitialPages = () => {
         console.log("Inside renderInitialPages");
-        for(let i = 1; i <= 3; i++){
+        for (let i = 1; i <= 3; i++) {
           renderCanvasID(`canvas-${i}`, i);
         }
       };
@@ -127,16 +80,33 @@ document.addEventListener("DOMContentLoaded", () => {
         queueRenderPage(pageNum);
       };
 
+      const resizeAndRenderPages = () => {
+        pdfDoc.getPage(1).then((page) => {
+          console.log("Reading Dimensions");
+          const viewport = page.getViewport({ scale });
+          const new_height = Math.round(viewport.height);
+          const new_width = Math.round(viewport.width);
+
+          const canvas_boxes = document.querySelectorAll(".canvas_experiment");
+          canvas_boxes.forEach((canvas_box) => {
+            canvas_box.height = new_height;
+            canvas_box.width = new_width;
+          });
+
+          console.log("Blank canvases are resized");
+          renderInitialPages();
+        });
+      };
+
       //* Zoom
       const zoomIn = () => {
-        scale = scale - 0.4;
-        console.log(scale);
-        showPage(pageNumInput);
+        scale += 0.2;
+        resizeAndRenderPages();
       };
 
       const zoomOut = () => {
-        scale = scale + 0.4;
-        showPage(pageNumInput);
+        scale -= 0.2;
+        resizeAndRenderPages();
       };
 
       //* Get document
@@ -156,13 +126,13 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .catch((err) => {
           console.error("Error loading PDF document:", err);
-          //Display error
+          // Display error
           const div = document.createElement("div");
           div.className = "error";
           div.appendChild(document.createTextNode(err.message));
           document.querySelector("body").insertBefore(div, canvas);
 
-          //Remove the top bar
+          // Remove the top bar
           document.querySelector(".nav_bar").style.display = "none";
         });
 
@@ -180,12 +150,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const container = document.querySelector(".pdf_viewer");
         console.log(container);
         for (let i = 1; i <= no_of_pages; i++) {
-          console.log("Appending blank canvas");
           const canvas = document.createElement("canvas");
           canvas.id = `canvas-${i}`;
-          canvas.classList.add('canvas_experiment');
+          canvas.classList.add("canvas_experiment");
           container.appendChild(canvas);
-          console.log(canvas);
         }
       };
 
@@ -211,8 +179,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
       //* Zoom event
-      document.querySelector("#minus").addEventListener("click", zoomIn);
-      document.querySelector("#plus").addEventListener("click", zoomOut);
+      document.querySelector("#minus").addEventListener("click", zoomOut);
+      document.querySelector("#plus").addEventListener("click", zoomIn);
 
       //* Scroll event
       const container = document.querySelector(".pdf_viewer");
