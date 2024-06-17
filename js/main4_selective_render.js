@@ -2,58 +2,61 @@ document.addEventListener("DOMContentLoaded", () => {
   import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.mjs")
     .then((pdfjsLib) => {
       //* Declaring Variables
-      const url = "../Docs/example.pdf";
+      const url = "../Docs/deeplearningbook.pdf";
 
       let pdfDoc = null,
         pageNum = 1,
         pageIsRendering = false,
         pageNumIsPending = null;
 
-      let scale = 3;
+      let scale = 1.5;
       let pageNumInput = 1;
 
       //* Rendering the Canvas ID
       const renderCanvasID = (canvas_id, num) => {
-        console.log("Inside renderCanvasID function");
+        //   console.log("Inside renderCanvasID function");
         const test_canvas = document.getElementById(canvas_id);
-        console.log(test_canvas);
+        //   console.log(test_canvas);
         const ctx = test_canvas.getContext("2d");
-        console.log(num);
+        //   console.log(num);
         pageIsRendering = true;
 
         // Get Page
-        pdfDoc.getPage(num).then((page) => {
-          console.log("Page gotten");
-          // Set scale
-          const viewport = page.getViewport({ scale });
-          test_canvas.height = viewport.height;
-          test_canvas.width = viewport.width;
-          console.log("Context: ", ctx);
+        pdfDoc
+          .getPage(num)
+          .then((page) => {
+            //   console.log("Page gotten");
+            // Set scale
+            const viewport = page.getViewport({ scale });
+            test_canvas.height = viewport.height;
+            test_canvas.width = viewport.width;
+            //   console.log("Context: ", ctx);
 
-          const renderCtx = {
-            canvasContext: ctx,
-            viewport,
-          };
+            const renderCtx = {
+              canvasContext: ctx,
+              viewport,
+            };
 
-          page.render(renderCtx).promise.then(() => {
-            console.log("Rendering context");
-            pageIsRendering = false;
-            if (pageNumIsPending != null) {
-              renderPage(pageNumIsPending);
-              pageNumIsPending = null;
-            }
+            page.render(renderCtx).promise.then(() => {
+              // console.log("Rendering context");
+              pageIsRendering = false;
+              if (pageNumIsPending != null) {
+                renderPage(pageNumIsPending);
+                pageNumIsPending = null;
+              }
+            });
+
+            // Output current page
+            document.querySelector("#page_num_input").textContent = num;
+          })
+          .catch((err) => {
+            console.error("Error rendering page:", err);
           });
-
-          // Output current page
-          document.querySelector("#page_num_input").textContent = num;
-        }).catch((err) => {
-          console.error("Error rendering page:", err);
-        });
       };
 
       //* Rendering initial pages
       const renderInitialPages = () => {
-        console.log("Inside renderInitialPages");
+        //   console.log("Inside renderInitialPages");
         for (let i = 1; i <= 3; i++) {
           renderCanvasID(`canvas-${i}`, i);
         }
@@ -61,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       //* Check for pages rendering
       const queueRenderPage = (num) => {
-        console.log("Inside queueRenderPage");
+        //   console.log("Inside queueRenderPage");
         if (pageIsRendering) {
           pageNumIsPending = num;
         } else {
@@ -71,21 +74,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
       //* Show specific page
       const showPage = (num) => {
-        console.log("Inside Show page");
+        //   console.log("Inside Show page");
         if (num < 1 || num > pdfDoc.numPages) {
-          console.log(num);
+          // console.log(num);
           return;
         }
         pageNum = num;
         queueRenderPage(pageNum);
       };
 
-      const resizeAndRenderPages = () => {
+      const resizeAndRenderPages = (scrollTop, scrollLeft, newScale) => {
         pdfDoc.getPage(1).then((page) => {
-          console.log("Reading Dimensions");
-          const viewport = page.getViewport({ scale });
+          // console.log("Reading Dimensions");
+          const viewport = page.getViewport({ scale: newScale });
           const new_height = Math.round(viewport.height);
           const new_width = Math.round(viewport.width);
+
+          console.log("New width: ", new_width, "New height: ", new_height);
 
           const canvas_boxes = document.querySelectorAll(".canvas_experiment");
           canvas_boxes.forEach((canvas_box) => {
@@ -93,20 +98,45 @@ document.addEventListener("DOMContentLoaded", () => {
             canvas_box.width = new_width;
           });
 
-          console.log("Blank canvases are resized");
+          // console.log("Blank canvases are resized");
           renderInitialPages();
+
+          // Restore scroll position
+          const scaleRatio = newScale / scale;
+          container.scrollTop = scrollTop * scaleRatio;
+          container.scrollLeft = scrollLeft * scaleRatio;
+
+          // Update scale
+          scale = newScale;
         });
       };
 
       //* Zoom
       const zoomIn = () => {
-        scale += 0.2;
-        resizeAndRenderPages();
+        //   console.log("Zooming in");
+        const scrollTop = container.scrollTop;
+        const scrollLeft = container.scrollLeft;
+        const newScale = scale + 0.2;
+
+        //   console.log("Current scale: ", scale);
+        //   console.log("Current scrollTop: ", scrollTop);
+        //   console.log("Current scrollLeft: ", scrollLeft);
+        //   console.log("New scale: ", newScale);
+
+        resizeAndRenderPages(scrollTop, scrollLeft, newScale);
       };
 
       const zoomOut = () => {
-        scale -= 0.2;
-        resizeAndRenderPages();
+        //   console.log("Zooming out");
+        const scrollTop = container.scrollTop;
+        const scrollLeft = container.scrollLeft;
+        const newScale = scale - 0.2;
+        //   console.log("Current scale: ", scale);
+        //   console.log("Current scrollTop: ", scrollTop);
+        //   console.log("Current scrollLeft: ", scrollLeft);
+        //   console.log("New scale: ", newScale);
+
+        resizeAndRenderPages(scrollTop, scrollLeft, newScale);
       };
 
       //* Get document
@@ -119,10 +149,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
           document.querySelector("#page_count").textContent = pdfDoc.numPages;
 
-          console.log("Document loaded");
+          // console.log("Document loaded");
           addCanvas(pdfDoc.numPages);
           renderInitialPages(pageNum);
-          console.log(pdfDoc);
+          // console.log(pdfDoc);
         })
         .catch((err) => {
           console.error("Error loading PDF document:", err);
@@ -138,17 +168,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
       //* Show scroll percentage
       const show_scroll = () => {
-        const scroll_percentage =
-          (container.scrollTop / container.scrollHeight) * 100;
-        console.log(scroll_percentage);
-        //* Append a new canvas at 50% scroll (Similar to incrementing the page number)
+        console.log("Scroll Top: ", container.scrollTop);
+        console.log("Scroll Height: ", container.scrollHeight);
+        const canvas_box = document.querySelector('.canvas_experiment');
+        const position = container.scrollTop / canvas_box.height;
+        var page_no = Math.floor(position);
+        var decimal = position - Math.floor(position);
+        if(decimal > 0.8){
+            page_no++;
+        }
+        document.querySelector("#page_num_input").value = page_no+1;
       };
 
       //* add canvas
       const addCanvas = (no_of_pages) => {
-        console.log("Inside addCanvas");
+        //   console.log("Inside addCanvas");
         const container = document.querySelector(".pdf_viewer");
-        console.log(container);
+        //   console.log(container);
         for (let i = 1; i <= no_of_pages; i++) {
           const canvas = document.createElement("canvas");
           canvas.id = `canvas-${i}`;
